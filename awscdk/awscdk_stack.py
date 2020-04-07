@@ -140,7 +140,7 @@ class AwscdkStack(core.Stack):
         textractorLayer = _lambda.LayerVersion(
             self,
             "Textractor",
-            code=_lambda.Code.from_asset("awscdk/lambda/helper"),
+            code=_lambda.Code.from_asset("awscdk/lambda/textractor"),
             compatible_runtimes=[_lambda.Runtime.PYTHON_3_7],
             license="Apache-2.0",
             description="Textractor layer.",
