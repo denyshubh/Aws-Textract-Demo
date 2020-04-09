@@ -40,6 +40,25 @@ class AwscdkStack(core.Stack):
                 actions=["sns:Publish"],
             )
         )
+        comprehendServiceRole = iam.Role(
+            self,
+            "ComprehendServiceRole",
+            assumed_by=iam.ServicePrincipal("comprehend.amazonaws.com"),
+        )
+        comprehendServiceRole.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                resources=["*"],
+                actions=[
+                    "comprehend:*",
+                    "s3:ListAllMyBuckets",
+                    "s3:ListBucket",
+                    "s3:GetBucketLocation",
+                    "iam:ListRoles",
+                    "iam:GetRole",
+                ],
+            )
+        )
         # **********S3 Batch Operations Role******************************
         s3BatchOperationsRole = iam.Role(
             self,
@@ -330,7 +349,7 @@ class AwscdkStack(core.Stack):
         contentBucket.grant_read_write(jobResultProcessor)
         existingContentBucket.grant_read_write(jobResultProcessor)
         jobResultProcessor.add_to_role_policy(
-            iam.PolicyStatement(actions=["textract:*"], resources=["*"])
+            iam.PolicyStatement(actions=["textract:*", "comprehend:*"], resources=["*"])
         )
 
         # --------------

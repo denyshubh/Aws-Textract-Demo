@@ -1,5 +1,5 @@
 import json
-from helper import FileHelper, S3Helper
+from helper import FileHelper, S3Helper, AwsHelper
 from trp import Document
 import boto3
 
@@ -15,9 +15,7 @@ class OutputGenerator:
         self.forms = forms
         self.tables = tables
         self.ddb = ddb
-
         self.outputPath = "{}-analysis/{}/".format(objectName, documentId)
-
         self.document = Document(self.response)
 
     def saveItem(self, pk, sk, output):
@@ -39,6 +37,16 @@ class OutputGenerator:
         opath = "{}page-{}-text-inreadingorder.txt".format(self.outputPath, p)
         S3Helper.writeToS3(textInReadingOrder, self.bucketName, opath)
         self.saveItem(self.documentId, "page-{}-TextInReadingOrder".format(p), opath)
+
+        entityAnalysis = self.awsComprehend(textInReadingOrder)
+        opath = "{}page-{}-text-entity.txt".format(self.outputPath, p)
+        S3Helper.writeToS3(entityAnalysis, self.bucketName, opath)
+        self.saveItem(self.documentId, "page-{}-EntityText".format(p), opath)
+
+    def awsComprehend(self, text):
+        client = AwsHelper().getClient("comprehend")
+        response = client.detect_entities(Text=text, LanguageCode="en")
+        return json.dumps(response)
 
     def _outputForm(self, page, p):
         csvData = []
